@@ -66,11 +66,11 @@ Open http://localhost:5173 in your browser.
 
 Deploy easily on [Vercel](https://vercel.com/):
 
-Connect your repo.
+ - Connect your repo.
 
-Add the VITE_ADMIN_PASSWORD environment variable in Vercel settings.
+ - Add the VITE_ADMIN_PASSWORD environment variable in Vercel settings.
 
-Deploy!
+ - Deploy!
 
 ## 🤝 Contributing
 
