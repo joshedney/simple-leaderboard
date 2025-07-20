@@ -16,10 +16,10 @@ import {
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#1976d2", // Google Blue
+      main: "#1976d2",
     },
     secondary: {
-      main: "#dc004e", // Google Pink
+      main: "#dc004e",
     },
   },
   typography: {
@@ -39,6 +39,7 @@ export default function LeaderboardApp() {
   const [name, setName] = useState("");
   const [faction, setFaction] = useState("");
   const [scoreInput, setScoreInput] = useState({});
+  const [editFactionInput, setEditFactionInput] = useState({});
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminPass, setAdminPass] = useState("");
 
@@ -94,6 +95,13 @@ export default function LeaderboardApp() {
   const updateScore = (id, score) => {
     const updatedList = contestants.map((c) =>
       c.id === id ? { ...c, score: c.score + Number(score) } : c
+    );
+    saveContestants(updatedList);
+  };
+
+  const updateFaction = (id, newFaction) => {
+    const updatedList = contestants.map((c) =>
+      c.id === id ? { ...c, faction: newFaction } : c
     );
     saveContestants(updatedList);
   };
@@ -181,8 +189,8 @@ export default function LeaderboardApp() {
                 key={contestant.id}
                 sx={{
                   display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  flexDirection: "column",
+                  gap: 1,
                   p: 1,
                   mb: 1,
                   borderRadius: 1,
@@ -191,8 +199,7 @@ export default function LeaderboardApp() {
                 }}
               >
                 <Box>
-                  {contestant.name} ({contestant.faction || "No Faction"}) -{" "}
-                  {contestant.score} pts
+                  {contestant.name} ({contestant.faction || "No Faction"}) - {contestant.score} pts
                 </Box>
                 {contestant.active && isAdmin && (
                   <Stack direction="row" spacing={1} alignItems="center">
@@ -215,6 +222,25 @@ export default function LeaderboardApp() {
                       }}
                     >
                       Add Score
+                    </Button>
+                    <TextField
+                      label="Faction"
+                      variant="outlined"
+                      size="small"
+                      value={editFactionInput[contestant.id] || contestant.faction || ""}
+                      onChange={(e) =>
+                        setEditFactionInput({
+                          ...editFactionInput,
+                          [contestant.id]: e.target.value,
+                        })
+                      }
+                    />
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => updateFaction(contestant.id, editFactionInput[contestant.id])}
+                    >
+                      Update Faction
                     </Button>
                     <Button
                       variant="outlined"
