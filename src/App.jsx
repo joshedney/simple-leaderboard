@@ -30,6 +30,10 @@ const theme = createTheme({
   },
 });
 
+const API_KEY = import.meta.env.VITE_JSONBIN_API_KEY;
+const BIN_ID = import.meta.env.VITE_JSONBIN_BIN_ID;
+const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
 export default function LeaderboardApp() {
   const [contestants, setContestants] = useState([]);
   const [name, setName] = useState("");
@@ -41,37 +45,64 @@ export default function LeaderboardApp() {
   const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
 
   useEffect(() => {
-    const saved = localStorage.getItem("leaderboard_contestants");
-    if (saved) setContestants(JSON.parse(saved));
+    loadContestants();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("leaderboard_contestants", JSON.stringify(contestants));
-  }, [contestants]);
+  const loadContestants = async () => {
+    try {
+      const res = await fetch(BASE_URL + "/latest", {
+        headers: {
+          "X-Master-Key": API_KEY,
+        },
+      });
+      const data = await res.json();
+      setContestants(data.record || []);
+    } catch (err) {
+      console.error("Failed to load data:", err);
+    }
+  };
+
+  const saveContestants = async (updatedList) => {
+    try {
+      await fetch(BASE_URL, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Master-Key": API_KEY,
+          "X-Bin-Versioning": "false",
+        },
+        body: JSON.stringify(updatedList),
+      });
+      setContestants(updatedList);
+    } catch (err) {
+      console.error("Failed to save data:", err);
+    }
+  };
 
   const addContestant = () => {
     if (name.trim()) {
-      setContestants([
+      const updatedList = [
         ...contestants,
         { id: Date.now(), name, faction, score: 0, active: true },
-      ]);
+      ];
+      saveContestants(updatedList);
       setName("");
       setFaction("");
     }
   };
 
   const updateScore = (id, score) => {
-    setContestants(
-      contestants.map((c) =>
-        c.id === id ? { ...c, score: c.score + Number(score) } : c
-      )
+    const updatedList = contestants.map((c) =>
+      c.id === id ? { ...c, score: c.score + Number(score) } : c
     );
+    saveContestants(updatedList);
   };
 
   const knockOut = (id) => {
-    setContestants(
-      contestants.map((c) => (c.id === id ? { ...c, active: false } : c))
+    const updatedList = contestants.map((c) =>
+      c.id === id ? { ...c, active: false } : c
     );
+    saveContestants(updatedList);
   };
 
   const handleLogin = () => {
